@@ -28,7 +28,7 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
       if (membershipError) throw membershipError
       const workspaceIds = (memberships || []).map((item: { workspace_id: string }) => item.workspace_id)
       if (!workspaceIds.length) return res.status(200).json({ dashboards: [] })
-      const { data, error } = await client.from('dashboards').select('id,name,configuration,created_at,updated_at').in('workspace_id', workspaceIds).order('updated_at', { ascending: false })
+      const { data, error } = await client.from('dashboards').select('id,name,configuration,created_at').in('workspace_id', workspaceIds).order('created_at', { ascending: false })
       if (error) throw error
       return res.status(200).json({ dashboards: data || [] })
     } catch (error) {
