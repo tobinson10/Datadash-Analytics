@@ -32,3 +32,19 @@ export function categoryColumns(d: Dataset) { return d.columns.filter(c => c.typ
 export function dateColumns(d: Dataset) { return d.columns.filter(c => c.type === 'date') }
 
 export function groupedData(rows: Row[], category: string, metric: string) { const m = new Map<string, number>(); rows.forEach(r => { const key = String(r[category] ?? 'Unspecified'); const val = toNumber(r[metric]); if (val !== null) m.set(key, (m.get(key) ?? 0) + val) }); return [...m].map(([name, value]) => ({ name, value })).sort((a,b) => b.value-a.value).slice(0, 10) }
+
+
+export function periodData(rows: Row[], dateColumn: string, metric: string, period: 'month' | 'quarter') {
+  const totals = new Map<string, number>()
+  for (const row of rows) {
+    const date = new Date(String(row[dateColumn] ?? ''))
+    const value = toNumber(row[metric])
+    if (Number.isNaN(date.getTime()) || value === null) continue
+    const year = date.getFullYear()
+    const key = period === 'quarter'
+      ? year + ' Q' + (Math.floor(date.getMonth() / 3) + 1)
+      : year + '-' + String(date.getMonth() + 1).padStart(2, '0')
+    totals.set(key, (totals.get(key) ?? 0) + value)
+  }
+  return [...totals].map(([name, value]) => ({ name, value })).sort((a, b) => a.name.localeCompare(b.name)).slice(-12)
+}
